@@ -1,0 +1,4 @@
+envvar.env
+.idea
+.selecto_venv
+__pycache__
