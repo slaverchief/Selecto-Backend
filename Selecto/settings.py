@@ -13,10 +13,17 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from os import environ as envvars
 from os.path import join
+from json import load
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = envvars.get
+if not env('DEBUG'):
+    try:
+        f = open(join(BASE_DIR, 'Selecto/env_var.json'))
+        env = load(f).get
+    except ModuleNotFoundError:
+        raise Exception('Environment variables are not set, set them or create env_var.json file in directory with settings.py file')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -41,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework'
+    'rest_framework',
+    'Selection'
 ]
 
 MIDDLEWARE = [

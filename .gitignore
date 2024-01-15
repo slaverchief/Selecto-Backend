@@ -1,4 +1,5 @@
-envvar.env
+Selecto/env_var.json
 .idea
 .selecto_venv
 __pycache__
+pre_setting.py
