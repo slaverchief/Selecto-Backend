@@ -20,10 +20,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = envvars.get
 if not env('DEBUG'):
     try:
-        f = open(join(BASE_DIR, 'Selecto/env_var.json'))
+        f = open(join(BASE_DIR, 'Selecto/env_var.env'))
         env = load(f).get
     except ModuleNotFoundError:
-        raise Exception('Environment variables are not set, set them or create env_var.json file in directory with settings.py file')
+        raise Exception('Environment variables are not set, set them or create env_var.env file in directory with settings.py file')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'Selection'
+    'Selection',
+    'rest_framework.authtoken',
+    'knox'
 ]
 
 MIDDLEWARE = [
@@ -102,18 +104,7 @@ DATABASES = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+
 ]
 
 
@@ -128,7 +119,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -140,3 +130,11 @@ STATIC_ROOT = join(BASE_DIR, 'static')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer'
+    )
+}

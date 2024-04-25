@@ -1,5 +1,6 @@
-Selecto/env_var.json
+Selecto/env_var.env
 .idea
 .selecto_venv
 __pycache__
 pre_setting.py
+migrations
