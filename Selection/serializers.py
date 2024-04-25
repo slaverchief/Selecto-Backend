@@ -18,3 +18,15 @@ class CharSerializer(serializers.ModelSerializer):
     class Meta:
         model = Char
         fields = '__all__'
+
+class OptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Option
+        fields = '__all__'
+
+class OptionCharSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = OptionChar
+        fields = '__all__'

@@ -14,6 +14,7 @@ from knox.views import LoginView as KnoxLoginView
 from rest_framework import permissions
 from django.db.utils import IntegrityError
 
+
 class LoginView(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
 
@@ -23,7 +24,6 @@ class LoginView(KnoxLoginView):
         user = serializer.validated_data['user']
         login(request, user)
         return super(LoginView, self).post(request, format=None)
-
 
 
 class BaseSelectoApiView(APIView):
@@ -36,7 +36,6 @@ class BaseSelectoApiView(APIView):
         serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
         return Response({'result': serializers.data})
 
-
     def post(self, request):
         try:
             serializer = self.Serializer(data=request.data)
@@ -45,7 +44,6 @@ class BaseSelectoApiView(APIView):
             return Response({'status': 'success'})
         except IntegrityError:
             return Response({'status': "Some constraint is violated"})
-
 
     def put(self, request):
         try:
@@ -72,14 +70,12 @@ class BaseSelectoApiView(APIView):
         except IntegrityError:
             return Response({'status': "Some constraint is violated"})
 
-
     def delete(self, request):
         try:
             self.Model.objects.get(**request.data).delete()
             return Response({'status': 'success'})
         except ObjectDoesNotExist:
             return Response({'status': f'Objects with such attributes do not exist'})
-
 
 
 class SelectionView(BaseSelectoApiView):
@@ -95,8 +91,19 @@ class SelectionView(BaseSelectoApiView):
         except IntegrityError:
             return Response({'status': "Some constraint is violated"})
 
+
 class CharView(BaseSelectoApiView):
     Serializer = CharSerializer
     Model = Char
+
+
+class OptionView(BaseSelectoApiView):
+    Serializer = OptionSerializer
+    Model = Option
+
+
+class OptionCharView(BaseSelectoApiView):
+    Serializer = OptionCharSerializer
+    Model = OptionChar
 
 # Create your views here.
