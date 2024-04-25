@@ -12,7 +12,7 @@ from .permissions import IsOwnerPermission
 from knox.auth import TokenAuthentication
 from knox.views import LoginView as KnoxLoginView
 from rest_framework import permissions
-
+from django.db.utils import IntegrityError
 
 class LoginView(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
@@ -25,19 +25,27 @@ class LoginView(KnoxLoginView):
         return super(LoginView, self).post(request, format=None)
 
 
-class SelectionView(APIView):
+
+class BaseSelectoApiView(APIView):
     permission_classes = (IsAuthenticated, IsOwnerPermission)
     authentication_classes = (TokenAuthentication,)
+    Serializer = None
+    Model = None
 
     def get(self, request):
-        serializers = SelectionSerializer(Selection.objects.filter(**request.data), many=True)
+        serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
         return Response({'result': serializers.data})
 
+
     def post(self, request):
-        serializer = SelectionSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        obj = serializer.save(owner=request.user)
-        return Response({'status': 'success'})
+        try:
+            serializer = self.Serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            obj = serializer.save()
+            return Response({'status': 'success'})
+        except IntegrityError:
+            return Response({'status': "Some constraint is violated"})
+
 
     def put(self, request):
         try:
@@ -49,20 +57,46 @@ class SelectionView(APIView):
                     continue
                 if flag == 'select':
                     select_dict[attribute] = request.data.get(key)
-            objs = Selection.objects.filter(**select_dict)
+            objs = self.Model.objects.filter(**select_dict)
             for obj in objs:
-                serializer = SelectionSerializer(instance=obj, data=request.data)
+                given_data = request.data
+                for key in obj.__dict__.keys():
+                    if key not in given_data.keys():
+                        given_data[key] = obj.__dict__[key]
+                serializer = self.Serializer(instance=obj, data=given_data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
+            return Response({'status': 'success'})
         except ObjectDoesNotExist:
-            return Response({'status': f'Object with name {request.get('old_name')} doesnt exist'})
-        return Response({'status': 'success'})
+            return Response({'status': f'Object doesnt exist'})
+        except IntegrityError:
+            return Response({'status': "Some constraint is violated"})
+
 
     def delete(self, request):
         try:
-            Selection.objects.get(**request.data).delete()
+            self.Model.objects.get(**request.data).delete()
+            return Response({'status': 'success'})
         except ObjectDoesNotExist:
-            return Response({'status': f'Object with name {request.data.get('name')} doesnt exist'})
-        return Response({'status': 'success'})
+            return Response({'status': f'Objects with such attributes do not exist'})
+
+
+
+class SelectionView(BaseSelectoApiView):
+    Serializer = SelectionSerializer
+    Model = Selection
+
+    def post(self, request):
+        try:
+            serializer = self.Serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            obj = serializer.save(owner=request.user)
+            return Response({'status': 'success'})
+        except IntegrityError:
+            return Response({'status': "Some constraint is violated"})
+
+class CharView(BaseSelectoApiView):
+    Serializer = CharSerializer
+    Model = Char
 
 # Create your views here.

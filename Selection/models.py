@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db.models import CheckConstraint, Q
+
 
 class Selection(models.Model):
     name = models.CharField(max_length=50)
@@ -9,10 +12,20 @@ class Selection(models.Model):
         return self.name
 
 
+
 class Char(models.Model):
     name = models.CharField(max_length=50)
     selection = models.ForeignKey(to='Selection', on_delete=models.CASCADE)
     priority = models.IntegerField()
+
+
+    class Meta:
+        constraints = [
+            CheckConstraint(
+                check=Q(priority__lte=10, priority__gte=1), name='priority_higher_1_less_10',
+            ),
+        ]
+
 
     def __str__(self):
         return self.name
