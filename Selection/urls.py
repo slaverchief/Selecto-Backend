@@ -6,7 +6,6 @@ urlpatterns = [
     path('selection', SelectionView.as_view()),
     path('char', CharView.as_view()),
     path('option', OptionView.as_view()),
-    path('optionchar', OptionView.as_view()),
-    path('login', LoginView.as_view(), name='knox_login'),
-    path('logout/', LogoutView.as_view(), name='knox_logout'),
+    path('optionchar', OptionCharView.as_view()),
+    path('calc', CalcView.as_view()),
 ]

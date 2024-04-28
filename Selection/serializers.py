@@ -2,9 +2,6 @@ from rest_framework import serializers
 from .models import *
 
 
-
-
-
 class SelectionSerializer(serializers.ModelSerializer):
 
 
@@ -19,11 +16,13 @@ class CharSerializer(serializers.ModelSerializer):
         model = Char
         fields = '__all__'
 
+
 class OptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Option
         fields = '__all__'
+
 
 class OptionCharSerializer(serializers.ModelSerializer):
 

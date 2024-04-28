@@ -31,7 +31,7 @@ if not env('DEBUG'):
 # SECURITY WARNING: keep the secret key used in production secret!
 
 SECRET_KEY = env('SECRET_KEY')
-
+ACCESS_TOKEN = env('ACCESS_TOKEN')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(env('DEBUG')))

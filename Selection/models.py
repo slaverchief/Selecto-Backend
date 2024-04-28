@@ -4,6 +4,9 @@ from django.core.exceptions import ValidationError
 from django.db.models import CheckConstraint, Q
 
 
+class AuthID(models.Model):
+    auth_string = models.CharField()
+
 class Selection(models.Model):
     name = models.CharField(max_length=50)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
@@ -12,12 +15,10 @@ class Selection(models.Model):
         return self.name
 
 
-
 class Char(models.Model):
     name = models.CharField(max_length=50)
     selection = models.ForeignKey(to='Selection', on_delete=models.CASCADE)
     priority = models.IntegerField()
-
 
     class Meta:
         constraints = [
@@ -26,15 +27,17 @@ class Char(models.Model):
             ),
         ]
 
-
     def __str__(self):
         return self.name
+
 
 class Option(models.Model):
     name = models.CharField(max_length=50)
+    selection = models.ForeignKey(to=Selection, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
+
 
 class OptionChar(models.Model):
     value = models.FloatField()
@@ -42,10 +45,18 @@ class OptionChar(models.Model):
     option = models.ForeignKey('Option', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Option {self.char.name}'
+        return f'{self.option.name} | {self.char.name}'
 
     class Meta:
         verbose_name = 'Option char'
         verbose_name_plural = 'Option chars '
+
+        constraints = [
+            CheckConstraint(
+                check=Q(option__lte=10, option__gte=1), name='char_value_higher_1_less_10',
+            ),
+        ]
+
+
 
 # Create your models here.

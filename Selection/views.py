@@ -8,27 +8,19 @@ from .models import *
 from .serializers import *
 from django.db.models import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsOwnerPermission
+from .permissions import IsOwnerPermission, IsCorrectToken
 from knox.auth import TokenAuthentication
 from knox.views import LoginView as KnoxLoginView
 from rest_framework import permissions
 from django.db.utils import IntegrityError
+from django.db.models import ObjectDoesNotExist
+from .calc import Matrix
 
 
-class LoginView(KnoxLoginView):
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-        return super(LoginView, self).post(request, format=None)
 
 
 class BaseSelectoApiView(APIView):
-    permission_classes = (IsAuthenticated, IsOwnerPermission)
-    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsCorrectToken, )
     Serializer = None
     Model = None
 
@@ -105,5 +97,21 @@ class OptionView(BaseSelectoApiView):
 class OptionCharView(BaseSelectoApiView):
     Serializer = OptionCharSerializer
     Model = OptionChar
+
+class CalcView(APIView):
+    permission_classes = [IsCorrectToken]
+    def get(self, request):
+        try:
+            sel_id = request.data.get('selection_id', None)
+            if not sel_id:
+                raise Exception("No selection ID")
+            s = Selection.object.get(pk=sel_id)
+            print(s.char_set.all())
+        except ObjectDoesNotExist:
+            return Response({'status': 'Selection with such id was not found'})
+        except Exception as exc:
+            return Response({'status': str(exc)})
+
+
 
 # Create your views here.
