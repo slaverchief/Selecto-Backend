@@ -56,3 +56,6 @@ class Matrix:
                 new_m[i][j] = msum
         return new_m
 
+    def vert_unit_conc(self, other):
+        for i in range(self.rows_amount):
+            self.vals[i].append(other[i])

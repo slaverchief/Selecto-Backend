@@ -1,8 +1,6 @@
 from rest_framework.permissions import BasePermission
 from Selecto.settings import ACCESS_TOKEN
-class IsOwnerPermission(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return request.user == obj.owner
+
 
 
 class IsCorrectToken(BasePermission):
