@@ -4,12 +4,13 @@ from django.core.exceptions import ValidationError
 from django.db.models import CheckConstraint, Q
 
 
-class AuthID(models.Model):
-    auth_string = models.CharField()
+class TGUser(models.Model):
+    auth_id = models.IntegerField()
+
 
 class Selection(models.Model):
     name = models.CharField(max_length=50)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    owner = models.ForeignKey(TGUser, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.name

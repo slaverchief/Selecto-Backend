@@ -91,6 +91,13 @@ class OptionCharView(BaseSelectoApiView):
     Serializer = OptionCharSerializer
     Model = OptionChar
 
+class TGUserAPIView(BaseSelectoApiView):
+    Serializer = TGUserSerializer
+    Model = TGUser
+
+    def put(self, request):
+        return Response({"status": "PUT method is not allowed"})
+
 class CalcView(APIView):
     permission_classes = [IsCorrectToken]
 

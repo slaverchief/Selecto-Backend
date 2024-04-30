@@ -29,3 +29,9 @@ class OptionCharSerializer(serializers.ModelSerializer):
     class Meta:
         model = OptionChar
         fields = '__all__'
+
+class TGUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TGUser
+        fields = '__all__'

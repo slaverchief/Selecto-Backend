@@ -7,5 +7,6 @@ urlpatterns = [
     path('char', CharView.as_view()),
     path('option', OptionView.as_view()),
     path('optionchar', OptionCharView.as_view()),
+    path('user', TGUserAPIView.as_view()),
     path('calc', CalcView.as_view()),
 ]
