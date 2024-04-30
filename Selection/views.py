@@ -94,7 +94,7 @@ class OptionCharView(BaseSelectoApiView):
 class CalcView(APIView):
     permission_classes = [IsCorrectToken]
 
-    @catch_exceptions
+    # @catch_exceptions
     def get(self, request):
         sel = request.data.get('selection', None)
         if not sel:
@@ -105,10 +105,20 @@ class CalcView(APIView):
         for i in range(len(chars)):
             for j in range(len(chars)):
                 pair_comp_matrix[i][j] = round(chars[i].priority/chars[j].priority, 3)
-        weight_each_char_matrix = Matrix(len(chars), 0)
-        options_queue = map(lambda x: x.name,s.option_set.all())
-        print(list(options_queue))
-        return Response({'status': 'success'})
+        options = s.option_set.all()
+        weight_each_char_matrix = Matrix(len(options), 0)
+        for ci in range(len(chars)):
+            c = chars[ci]
+            char_option_matrix = Matrix(len(options), len(options))
+            for i in range(len(options)):
+                for j in range(len(options)):
+                    oc1 = OptionChar.objects.get(char=c, option=options[i]).value
+                    oc2 = OptionChar.objects.get(char=c, option=options[j]).value
+                    char_option_matrix[i][j] = round(oc1/oc2, 3)
+            weight_each_char_matrix.vert_unit_conc(Matrix.build_weight_table(char_option_matrix.normalise()))
+        result_matrix = weight_each_char_matrix*Matrix.build_weight_table(pair_comp_matrix.normalise())
+        maxi = result_matrix.vals.index(max(result_matrix.vals))
+        return Response({'status': options[maxi].name})
 
 
 

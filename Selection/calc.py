@@ -37,16 +37,16 @@ class Matrix:
 
     @staticmethod
     def build_weight_table(other):
-        weight_matrix = Matrix(1, other.rows_amount)
+        weight_matrix = Matrix(other.rows_amount, 1)
         for i in range(other.rows_amount):
-            weight_matrix[0][i] = sum(other[i])/len(other[i])
+            weight_matrix[i][0] = sum(other[i])/len(other[i])
         return weight_matrix
 
     def __mul__(self, other):
         if not isinstance(other, Matrix):
             return
         if self.cols_amount != other.rows_amount:
-            return
+            raise Exception("Error at multiplying of matrixes: columns amount and rows amount dont match")
         new_m = Matrix(self.rows_amount, other.cols_amount)
         for i in range(self.rows_amount):
             for j in range(other.cols_amount):
@@ -58,4 +58,5 @@ class Matrix:
 
     def vert_unit_conc(self, other):
         for i in range(self.rows_amount):
-            self.vals[i].append(other[i])
+            self.vals[i].append(other[i][0])
+        self.cols_amount = len(self.vals[i])
