@@ -94,7 +94,7 @@ class OptionCharView(BaseSelectoApiView):
 class CalcView(APIView):
     permission_classes = [IsCorrectToken]
 
-    # @catch_exceptions
+    @catch_exceptions
     def get(self, request):
         sel = request.data.get('selection', None)
         if not sel:
