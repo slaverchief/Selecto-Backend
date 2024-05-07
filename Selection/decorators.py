@@ -10,7 +10,7 @@ def catch_exceptions(f):
         except IntegrityError:
             return Response({'status': "Some constraint is violated"})
         except ObjectDoesNotExist:
-            return Response({'status': f'Object doesnt exist'})
+            return Response({'status': 'success', 'result': {}})
         except Exception as exc:
             return Response({'status': str(exc)})
     return wrapper

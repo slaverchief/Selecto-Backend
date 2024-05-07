@@ -4,7 +4,6 @@ from .models import *
 
 class SelectionSerializer(serializers.ModelSerializer):
 
-
     class Meta:
         model = Selection
         fields = '__all__'

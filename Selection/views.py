@@ -1,18 +1,8 @@
-from django.contrib.auth import login
-from django.shortcuts import render
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.authtoken.serializers import AuthTokenSerializer
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import *
 from .serializers import *
-from django.db.models import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticated
 from .permissions import IsCorrectToken
-from knox.auth import TokenAuthentication
-from knox.views import LoginView as KnoxLoginView
-from rest_framework import permissions
-from django.db.models import ObjectDoesNotExist
 from .calc import Matrix
 from .decorators import catch_exceptions
 
@@ -29,7 +19,7 @@ class BaseSelectoApiView(APIView):
     @catch_exceptions
     def get(self, request):
         serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
-        return Response({'result': serializers.data})
+        return Response({'result': serializers.data, 'status': 'success'})
 
     @catch_exceptions
     def post(self, request):
@@ -73,7 +63,7 @@ class SelectionView(BaseSelectoApiView):
     def post(self, request):
         serializer = self.Serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        obj = serializer.save(owner=request.user)
+        obj = serializer.save()
         return Response({'status': 'success'})
 
 
@@ -91,9 +81,35 @@ class OptionCharView(BaseSelectoApiView):
     Serializer = OptionCharSerializer
     Model = OptionChar
 
+    @catch_exceptions
+    def get(self, request):
+        serializers = None
+        if request.data.get('selection', None):
+            objects = None
+            chars = Char.objects.filter(selection=request.data.get('selection'))
+            optionchars = self.Model.objects.filter(char__in=chars)
+            serializers = self.Serializer(optionchars, many=True)
+        else:
+            serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
+        for data in serializers.data:
+            for key in list(data.keys()):
+                if key == 'char':
+                    c = Char.objects.get(pk=data[key])
+                    data[key] = c.name
+                elif key == 'option':
+                    o = Option.objects.get(pk=data[key])
+                    data[key] = o.name
+        return Response({'result': serializers.data, 'status': 'success'})
+
+
 class TGUserAPIView(BaseSelectoApiView):
     Serializer = TGUserSerializer
     Model = TGUser
+
+    @catch_exceptions
+    def get(self, request):
+        serializers = self.Serializer(self.Model.objects.get(**request.data))
+        return Response({'result': serializers.data, 'status': 'success'})
 
     def put(self, request):
         return Response({"status": "PUT method is not allowed"})
@@ -125,7 +141,7 @@ class CalcView(APIView):
             weight_each_char_matrix.vert_unit_conc(Matrix.build_weight_table(char_option_matrix.normalise()))
         result_matrix = weight_each_char_matrix*Matrix.build_weight_table(pair_comp_matrix.normalise())
         maxi = result_matrix.vals.index(max(result_matrix.vals))
-        return Response({'status': options[maxi].name})
+        return Response({'result': options[maxi].name, 'status': 'success'})
 
 
 

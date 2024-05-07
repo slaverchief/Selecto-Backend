@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import *
-from knox.views import LogoutView
 
 urlpatterns = [
     path('selection', SelectionView.as_view()),
