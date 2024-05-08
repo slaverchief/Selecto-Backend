@@ -7,10 +7,6 @@ from .calc import Matrix
 from .decorators import catch_exceptions
 
 
-
-
-
-
 class BaseSelectoApiView(APIView):
     permission_classes = (IsCorrectToken, )
     Serializer = None
@@ -26,7 +22,7 @@ class BaseSelectoApiView(APIView):
         serializer = self.Serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
-        return Response({'status': 'success'})
+        return Response({'status': 'success', 'res': obj.id})
 
     @catch_exceptions
     def put(self, request):
@@ -58,13 +54,6 @@ class BaseSelectoApiView(APIView):
 class SelectionView(BaseSelectoApiView):
     Serializer = SelectionSerializer
     Model = Selection
-
-    @catch_exceptions
-    def post(self, request):
-        serializer = self.Serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        obj = serializer.save()
-        return Response({'status': 'success'})
 
 
 class CharView(BaseSelectoApiView):
