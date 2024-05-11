@@ -53,7 +53,7 @@ class OptionChar(models.Model):
 
         constraints = [
             CheckConstraint(
-                check=Q(option__lte=10, option__gte=1), name='char_value_higher_1_less_10',
+                check=Q(value__lte=10, value__gte=1), name='char_value_higher_1_less_10',
             ),
         ]
 

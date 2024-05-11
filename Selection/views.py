@@ -20,7 +20,7 @@ class BaseSelectoApiView(APIView):
     @catch_exceptions
     def post(self, request):
         serializer = self.Serializer(data=request.data)
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         obj = serializer.save()
         return Response({'status': 'success', 'result': obj.id})
 
