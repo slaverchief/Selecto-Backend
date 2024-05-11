@@ -49,6 +49,7 @@ class OptionChar(models.Model):
     class Meta:
         verbose_name = 'Option char'
         verbose_name_plural = 'Option chars '
+        unique_together = ('char', 'option',)
 
         constraints = [
             CheckConstraint(

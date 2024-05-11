@@ -20,9 +20,9 @@ class BaseSelectoApiView(APIView):
     @catch_exceptions
     def post(self, request):
         serializer = self.Serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid()
         obj = serializer.save()
-        return Response({'status': 'success', 'res': obj.id})
+        return Response({'status': 'success', 'result': obj.id})
 
     @catch_exceptions
     def put(self, request):
@@ -41,7 +41,7 @@ class BaseSelectoApiView(APIView):
                 if key not in given_data.keys():
                     given_data[key.replace('_id', '')] = obj.__dict__[key]
             serializer = self.Serializer(instance=obj, data=given_data)
-            serializer.is_valid(raise_exception=True)
+            serializer.is_valid()
             serializer.save()
         return Response({'status': 'success'})
 
@@ -89,6 +89,16 @@ class OptionCharView(BaseSelectoApiView):
                     o = Option.objects.get(pk=data[key])
                     data[key] = o.name
         return Response({'result': serializers.data, 'status': 'success'})
+
+    def post(self, request):
+        rd = request.data
+        if OptionChar.objects.filter(char=rd.get('char'), option=rd.get('option')):
+            request.data['select_char'] = rd.get('char')
+            request.data['select_option'] = rd.get('option')
+            del request.data['char'], request.data['option']
+            return super().put(request)
+        else:
+            return super().post(request)
 
 
 class TGUserAPIView(BaseSelectoApiView):
