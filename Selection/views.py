@@ -1,4 +1,4 @@
-
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
@@ -15,14 +15,14 @@ class BaseSelectoApiView(APIView):
     @catch_exceptions
     def get(self, request):
         serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
-        return Response({'result': serializers.data, 'status': 'success'})
+        return Response({'result': serializers.data, 'status': 0})
 
     @catch_exceptions
     def post(self, request):
         serializer = self.Serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
-        return Response({'status': 'success', 'result': obj.id})
+        return Response({'status': 0, 'result': obj.id})
 
     @catch_exceptions
     def put(self, request):
@@ -43,12 +43,12 @@ class BaseSelectoApiView(APIView):
             serializer = self.Serializer(instance=obj, data=given_data)
             serializer.is_valid()
             serializer.save()
-        return Response({'status': 'success'})
+        return Response({'status': 0})
 
     @catch_exceptions
     def delete(self, request):
         self.Model.objects.get(**request.data).delete()
-        return Response({'status': 'success'})
+        return Response({'status': 0})
 
 
 class SelectionView(BaseSelectoApiView):
@@ -88,7 +88,7 @@ class OptionCharView(BaseSelectoApiView):
                 elif key == 'option':
                     o = Option.objects.get(pk=data[key])
                     data[key] = o.name
-        return Response({'result': serializers.data, 'status': 'success'})
+        return Response({'result': serializers.data, 'status': 0})
 
     def post(self, request):
         rd = request.data
@@ -108,10 +108,8 @@ class TGUserAPIView(BaseSelectoApiView):
     @catch_exceptions
     def get(self, request):
         serializers = self.Serializer(self.Model.objects.get(**request.data))
-        return Response({'result': serializers.data, 'status': 'success'})
+        return Response({'result': serializers.data, 'status': 0})
 
-    def put(self, request):
-        return Response({"status": "PUT method is not allowed"})
 
 class CalcView(APIView):
     permission_classes = [IsCorrectToken]
@@ -134,13 +132,17 @@ class CalcView(APIView):
             char_option_matrix = Matrix(len(options), len(options))
             for i in range(len(options)):
                 for j in range(len(options)):
-                    oc1 = OptionChar.objects.get(char=c, option=options[i]).value
-                    oc2 = OptionChar.objects.get(char=c, option=options[j]).value
+                    oc1 = OptionChar.objects.filter(char=c, option=options[i])
+                    oc2 = OptionChar.objects.filter(char=c, option=options[j])
+                    if not oc1 or not oc2:
+                        return Response({'status': 1, 'result': 'Допущена ошибка в заполнении выборки.'})
+                    oc1, oc2 = oc1.first().value, oc2.first().value
                     char_option_matrix[i][j] = round(oc1/oc2, 3)
+
             weight_each_char_matrix.vert_unit_conc(Matrix.build_weight_table(char_option_matrix.normalise()))
         result_matrix = weight_each_char_matrix*Matrix.build_weight_table(pair_comp_matrix.normalise())
         maxi = result_matrix.vals.index(max(result_matrix.vals))
-        return Response({'result': options[maxi].name, 'status': 'success'})
+        return Response({'result': options[maxi].name, 'status': 0})
 
 
 
