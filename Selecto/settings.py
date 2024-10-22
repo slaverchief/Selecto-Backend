@@ -18,13 +18,6 @@ from json import load
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = envvars.get
-if not env('DEBUG'):
-    try:
-        f = open(join(BASE_DIR, 'Selecto/env_var.env'))
-        env = load(f).get
-    except ModuleNotFoundError:
-        raise Exception('Environment variables are not set, set them or create env_var.env file in directory with settings.py file')
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 

@@ -107,8 +107,11 @@ class TGUserAPIView(BaseSelectoApiView):
 
     @catch_exceptions
     def get(self, request):
-        serializers = self.Serializer(self.Model.objects.get(**request.data))
-        return Response({'result': serializers.data, 'status': 0})
+        serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
+        result = serializers.data
+        if len(result) == 1:
+            result = result[0]
+        return Response({'result': result, 'status': 0})
 
 
 class CalcView(APIView):
