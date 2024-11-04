@@ -4,3 +4,4 @@ Selecto/env_var.env
 __pycache__
 pre_setting.py
 migrations
+docker-compose.yml

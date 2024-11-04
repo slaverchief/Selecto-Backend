@@ -18,6 +18,7 @@ from json import load
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = envvars.get
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -78,6 +79,7 @@ WSGI_APPLICATION = 'Selecto.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+
 
 DATABASES = {
     'default': {
