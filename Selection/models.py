@@ -3,7 +3,7 @@ from django.db.models import CheckConstraint, Q
 
 
 class TGUser(models.Model):
-    auth_id = models.IntegerField()
+    auth_id = models.IntegerField(unique=True)
 
 
 class Selection(models.Model):

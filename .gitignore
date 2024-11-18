@@ -5,3 +5,5 @@ __pycache__
 pre_setting.py
 migrations
 docker-compose.yml
+.dockerignore
+Dockerfile
