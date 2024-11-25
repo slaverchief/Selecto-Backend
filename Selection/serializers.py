@@ -53,11 +53,11 @@ class OptionCharSerializer(BaseSelectoSerializer):
         model = OptionChar
         fields = '__all__'
 
-class TGUserSerializer(BaseSelectoSerializer):
+class UserSerializer(BaseSelectoSerializer):
     def create(self, validated_data):
         self.non_edit += ['auth_id']
         return super().create(validated_data)
 
     class Meta:
-        model = TGUser
+        model = User
         fields = '__all__'

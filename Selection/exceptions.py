@@ -1,0 +1,4 @@
+
+
+class CalcException(Exception):
+    pass

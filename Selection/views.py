@@ -1,28 +1,34 @@
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from .exceptions import CalcException
 from .serializers import *
-from .permissions import IsCorrectToken
 from .calc import Matrix
 from .decorators import catch_exceptions
+from .permissions import *
 
 
 class BaseSelectoApiView(APIView):
-    permission_classes = (IsCorrectToken, )
+    permission_classes = (IsAuthenticated, )
     Serializer = None
     Model = None
 
+    def get_objects(self, request):
+        return self.Model.objects.filter(**request.data)
+
     @catch_exceptions
     def get(self, request):
-        serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
-        return Response({'result': serializers.data, 'status': 0})
+        serializers = self.Serializer(self.get_objects(request), many=True)
+        return Response({"result": serializers.data})
 
     @catch_exceptions
     def post(self, request):
         serializer = self.Serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
-        return Response({'status': 0, 'result': obj.id})
+        return Response({"id": obj.id})
 
     @catch_exceptions
     def put(self, request):
@@ -43,22 +49,34 @@ class BaseSelectoApiView(APIView):
             serializer = self.Serializer(instance=obj, data=given_data)
             serializer.is_valid()
             serializer.save()
-        return Response({'status': 0})
+        return Response()
 
     @catch_exceptions
     def delete(self, request):
         self.Model.objects.get(**request.data).delete()
-        return Response({'status': 0})
+        return Response()
 
 
 class SelectionView(BaseSelectoApiView):
     Serializer = SelectionSerializer
     Model = Selection
 
+    def get(self, request):
+        request.data['owner'] = request.user.pk
+        return super().get(request)
+
+    def post(self, request):
+        request.data['owner'] = request.user.pk
+        return super().post(request)
+
 
 class CharView(BaseSelectoApiView):
     Serializer = CharSerializer
     Model = Char
+
+    def get_objects(self, request):
+        selections = Selection.objects.filter(owner=request.user)
+        return Char.objects.filter(selection__in=selections).filter(**request.data)
 
 
 class OptionView(BaseSelectoApiView):
@@ -88,7 +106,7 @@ class OptionCharView(BaseSelectoApiView):
                 elif key == 'option':
                     o = Option.objects.get(pk=data[key])
                     data[key] = o.name
-        return Response({'result': serializers.data, 'status': 0})
+        return Response({"result": serializers.data})
 
     def post(self, request):
         rd = request.data
@@ -101,51 +119,46 @@ class OptionCharView(BaseSelectoApiView):
             return super().post(request)
 
 
-class TGUserAPIView(BaseSelectoApiView):
-    Serializer = TGUserSerializer
-    Model = TGUser
+# class UserAPIView(BaseSelectoApiView):
+#     permission_classes = []
+#     Serializer = UserSerializer
+#     Model = User
 
-    @catch_exceptions
-    def get(self, request):
-        serializers = self.Serializer(self.Model.objects.filter(**request.data), many=True)
-        result = serializers.data
-        if len(result) == 1:
-            result = result[0]
-        return Response({'result': result, 'status': 0})
 
 
 class CalcView(APIView):
-    permission_classes = [IsCorrectToken]
-
     @catch_exceptions
     def get(self, request):
         sel = request.data.get('selection', None)
         if not sel:
-            raise Exception("No selection ID")
-        s = Selection.objects.get(pk=sel)
-        chars = s.char_set.all()
-        pair_comp_matrix = Matrix(len(chars), len(chars))
-        for i in range(len(chars)):
-            for j in range(len(chars)):
-                pair_comp_matrix[i][j] = round(chars[i].priority/chars[j].priority, 3)
-        options = s.option_set.all()
-        weight_each_char_matrix = Matrix(len(options), 0)
-        for ci in range(len(chars)):
-            c = chars[ci]
-            char_option_matrix = Matrix(len(options), len(options))
-            for i in range(len(options)):
-                for j in range(len(options)):
-                    oc1 = OptionChar.objects.filter(char=c, option=options[i])
-                    oc2 = OptionChar.objects.filter(char=c, option=options[j])
-                    if not oc1 or not oc2:
-                        return Response({'status': 1, 'result': 'Допущена ошибка в заполнении выборки.'})
-                    oc1, oc2 = oc1.first().value, oc2.first().value
-                    char_option_matrix[i][j] = round(oc1/oc2, 3)
+            raise CalcException("No selection ID")
+        try:
+            s = Selection.objects.get(pk=sel)
+            chars = s.char_set.all()
+            pair_comp_matrix = Matrix(len(chars), len(chars))
+            for i in range(len(chars)):
+                for j in range(len(chars)):
+                    pair_comp_matrix[i][j] = round(chars[i].priority/chars[j].priority, 3)
+            options = s.option_set.all()
+            weight_each_char_matrix = Matrix(len(options), 0)
+            for ci in range(len(chars)):
+                c = chars[ci]
+                char_option_matrix = Matrix(len(options), len(options))
+                for i in range(len(options)):
+                    for j in range(len(options)):
+                        oc1 = OptionChar.objects.filter(char=c, option=options[i])
+                        oc2 = OptionChar.objects.filter(char=c, option=options[j])
+                        if not oc1 or not oc2:
+                            raise
+                        oc1, oc2 = oc1.first().value, oc2.first().value
+                        char_option_matrix[i][j] = round(oc1/oc2, 3)
 
-            weight_each_char_matrix.vert_unit_conc(Matrix.build_weight_table(char_option_matrix.normalise()))
-        result_matrix = weight_each_char_matrix*Matrix.build_weight_table(pair_comp_matrix.normalise())
-        maxi = result_matrix.vals.index(max(result_matrix.vals))
-        return Response({'result': options[maxi].name, 'status': 0})
+                weight_each_char_matrix.vert_unit_conc(Matrix.build_weight_table(char_option_matrix.normalise()))
+            result_matrix = weight_each_char_matrix*Matrix.build_weight_table(pair_comp_matrix.normalise())
+            maxi = result_matrix.vals.index(max(result_matrix.vals))
+            return Response({"result": options[maxi].name})
+        except:
+            raise CalcException("Selection filled incorrectly")
 
 
 

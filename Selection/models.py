@@ -2,13 +2,16 @@ from django.db import models
 from django.db.models import CheckConstraint, Q
 
 
-class TGUser(models.Model):
+class User(models.Model):
     auth_id = models.IntegerField(unique=True)
+
+    def is_authenticated(self):
+        return True
 
 
 class Selection(models.Model):
     name = models.CharField(max_length=50)
-    owner = models.ForeignKey(TGUser, on_delete=models.CASCADE, default=1)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

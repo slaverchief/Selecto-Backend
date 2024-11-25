@@ -25,7 +25,6 @@ env = envvars.get
 # SECURITY WARNING: keep the secret key used in production secret!
 
 SECRET_KEY = env('SECRET_KEY')
-ACCESS_TOKEN = env('ACCESS_TOKEN')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(env('DEBUG')))
@@ -126,7 +125,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-            'rest_framework.authentication.TokenAuthentication',
+            'Selection.auth.SelectoAuthentication',
         ],
 
     'DEFAULT_RENDERER_CLASSES': (
