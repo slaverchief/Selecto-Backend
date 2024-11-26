@@ -12,7 +12,6 @@ This is a backend for an application that implements sampling using the algorith
 
 - Set the all required environment variables:
 	- **SECRET_KEY** - The secret key in setting.py file
-	- **ACCESS_TOKEN** - The token for access to the backend
 	- **DEBUG** - The value that sets the status of the DEBUG variable(1 or 0)
 	- **MAIN_HOST** - The address of the host on which the backend will run
 	- **DB_NAME** - Name of app's database
