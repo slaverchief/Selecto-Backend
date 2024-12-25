@@ -2,8 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.utils import IntegrityError
 from rest_framework.response import Response
 from Selecto.settings import DEBUG
-from .exceptions import CalcException
-from .models import OptionChar
+from Selecto.exceptions import CalcException
 import re
 
 

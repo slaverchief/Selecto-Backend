@@ -1,13 +1,11 @@
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .exceptions import CalcException
+from Selecto.exceptions import CalcException
 from .serializers import *
 from .calc import Matrix
-from .decorators import catch_exceptions
-from .permissions import *
+from Selecto.decorators import catch_exceptions
 
 
 class BaseSelectoApiView(APIView):
